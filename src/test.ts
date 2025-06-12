@@ -30,7 +30,7 @@ async function testLargeMessage() {
         name: "John Doe",
         email: "bnampellah1@gmail.com",
         phone: "+255742147567",
-        fcmToken: "fcm-token-123"
+        fcmToken: "BJaCsWaGZ4gwC7_SFn88Vl0XuvQfQjCsWVnijdcoVk-QmB1mLOEVl7o07KmjF8NhWzSHh9VGhQSXgfJ1BBBgBI8"
       },
       channels: ["email", "sms", "push"],
       content: {
