@@ -1,25 +1,49 @@
 # Notification System
 
-A scalable and maintainable notification system for e-commerce platforms, built with Node.js, Kafka, and Prisma.
+A scalable notification system built with Node.js, Kafka, and TypeScript.
 
 ## Features
 
-- Real-time event processing with Kafka
-- Multiple notification channels (Email via Google SMTP, SMS, Push)
-- User preference management
-- Template-based notifications
-- Scalable architecture
+- Event-driven architecture using Kafka
+- Multiple notification channels (Email, SMS, Push)
+- TypeScript for type safety
+- Docker-based deployment
+- Scalable and maintainable design
 
 ## Prerequisites
 
-- Node.js 16+
+- Node.js (v14 or higher)
 - Docker and Docker Compose
+- Kafka
 - PostgreSQL
-- Google Account (for SMTP)
-- Twilio account
-- Firebase project
 
-## Setup
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Kafka
+KAFKA_BROKERS=localhost:9092
+KAFKA_CLIENT_ID=notification-service
+KAFKA_CONSUMER_GROUP=notification-group
+
+# Email (SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@gmail.com
+
+# SMS (Twilio)
+TWILIO_SID=your-twilio-sid
+TWILIO_AUTH_TOKEN=your-twilio-auth-token
+TWILIO_PHONE=your-twilio-phone-number
+
+# Firebase (Push Notifications)
+GOOGLE_APPLICATION_CREDENTIALS=path/to/firebase-credentials.json
+```
+
+## Installation
 
 1. Clone the repository:
 ```bash
@@ -32,44 +56,19 @@ cd notification-system
 npm install
 ```
 
-3. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-```
-
-### Google SMTP Setup
-1. Go to your Google Account settings
-2. Enable 2-Step Verification if not already enabled
-3. Generate an App Password:
-   - Go to Security > App Passwords
-   - Select "Mail" and your device
-   - Copy the generated 16-character password
-4. Update your `.env` file with:
-   ```
-   SMTP_USER=your-email@gmail.com
-   SMTP_PASS=your-16-char-app-password
-   SMTP_FROM=your-email@gmail.com
-   ```
-
-4. Start the infrastructure:
+3. Start the services:
 ```bash
 docker-compose up -d
 ```
 
-5. Run database migrations:
+4. Generate Prisma client:
 ```bash
-npm run prisma:migrate
-```
-
-6. Start the service:
-```bash
-npm run dev
+npm run prisma:generate
 ```
 
 ## Testing
 
-To test the notification system, you can publish an event to Kafka:
+To test the notification system, you can publish an event to Kafka. The event should include all necessary user and notification details:
 
 ```json
 {
@@ -78,28 +77,68 @@ To test the notification system, you can publish an event to Kafka:
   "orderId": "ORD123456",
   "status": "placed",
   "user": {
-    "name": "John Doe"
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890",
+    "fcmToken": "fcm-token-123"
+  },
+  "channels": ["email", "sms", "push"],
+  "content": {
+    "title": "Order Placed Successfully",
+    "body": "Dear John Doe, your order ORD123456 has been placed successfully. We'll notify you when it ships."
   }
 }
 ```
 
+Run the test script:
+```bash
+npm run test
+```
+
 ## Architecture
 
-- **Kafka**: Event streaming platform
-- **Prisma**: ORM for database operations
-- **PostgreSQL**: Database
-- **Google SMTP**: Email notifications
-- **Twilio**: SMS notifications
-- **Firebase**: Push notifications
+The system follows an event-driven architecture:
+
+1. **Event Producer**: Publishes notification events to Kafka
+2. **Event Consumer**: Processes events and sends notifications through configured channels
+3. **Channel Senders**: Handle the actual sending of notifications through different channels (email, SMS, push)
+
+### Event Flow
+
+1. An event is published to the `order-events` topic
+2. The notification worker consumes the event
+3. Based on the event data, notifications are sent through the specified channels
+4. Each channel sender handles the specific requirements of its notification type
+
+## Development
+
+Start the development server:
+```bash
+npm run dev
+```
+
+The server will automatically restart when you make changes to the code.
+
+## Production
+
+Build the application:
+```bash
+npm run build
+```
+
+Start the production server:
+```bash
+npm start
+```
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT # notificationSystem
+This project is licensed under the MIT License - see the LICENSE file for details.
